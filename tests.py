@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch
 from main import add_book, query_books, update_stock, delete_book, list_books, connect_to_mongodb
+from pymongo import MongoClient
 
 
 class TestLibraryManagementSystem(unittest.TestCase):
@@ -17,7 +18,9 @@ class TestLibraryManagementSystem(unittest.TestCase):
         """Clean up after all tests."""
         cls.books_collection.delete_many({})  # Clear collection after tests
         cls.client.close()
-
+    def setUp(self):
+        """Clear the collection before each test."""
+        self.books_collection.delete_many({})
     def test_add_book(self):
         """Test adding a book to the collection."""
         book_id = add_book("The Great Gatsby", "F. Scott Fitzgerald", "Fiction", 10)
@@ -67,6 +70,15 @@ class TestLibraryManagementSystem(unittest.TestCase):
         self.assertIn("Book A", titles)
         self.assertIn("Book B", titles)
 
+    def test_mongodb_connection(self):
+        """Test establishing a connection to MongoDB."""
+        try:
+            client = MongoClient("mongodb://localhost:27017/")
+            server_info = client.server_info()
+            self.assertIsInstance(server_info, dict)
+            print("MongoDB connection test passed!")
+        except Exception as e:
+            self.fail(f"MongoDB connection test failed: {e}")
 
 if __name__ == "__main__":
     unittest.main()
